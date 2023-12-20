@@ -10,7 +10,6 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
-import re
 
 
 class HBNBCommand(cmd.Cmd):
@@ -116,7 +115,6 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        
         if not args:
             print("** class name missing **")
             return
@@ -196,7 +194,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del (storage.all()[key])
+            del(storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -328,69 +326,6 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
-
-    # ===================================================
-    # Utils
-    # ===================================================
-    def parse_creation_line(self, line):
-        """
-        a function to parse the create commande line
-        - the Syntax: create <Class name> <param 1> <param 2> <param 3>...
-        - Param syntax: <key name>=<value>
-        - String: "<value>" => starts with a double quote
-        - all underscores _ must be replace by spaces
-        - Float: <unit>.<decimal> => contains a dot .
-        - Integer: <number> => default case
-        """
-        _cls = ""
-        _valide_params = {}
-        cmd = {"_cls": "", "_valide_params": {}}
-
-        list_line = line.split()
-        _cls = list_line[0]
-
-        # will store the params
-        _params = {}
-        if len(list_line) > 1:
-
-            # getting the params
-            for param in list_line[1:]:
-
-                # check if param syntax is valid
-                if not re.search(r".+=.+", param):
-                    continue
-
-                _params[str(param.split("=")[0])] = str(param.split("=")[1])
-
-            # validating the params 'values':
-            for k, v in _params.items():
-                try:
-                    # check if value is an int
-                    if re.search(r"^\d+$", v):
-                        _valide_params[k] = int(v)
-
-                    # check if float
-                    elif re.search(r"^-?\d+\.\d+$", v):
-                        _valide_params[k] = float(v)
-
-                    # check valide string
-                    elif re.search(r"^\".+\"$", v):
-                        v = v.replace("_", " ")
-                        v = v[1:-1].replace('"', '\"')
-                        _valide_params[k] = v
-
-                    else:
-                        # if none of the above remove it from '_params'
-                        continue
-
-                except Exception as e:
-                    print(f"!!!!! == ERROR\n{e}")
-                    continue
-
-        cmd["_cls"] = _cls
-        cmd["_valide_params"] = _valide_params
-
-        return cmd
 
 
 if __name__ == "__main__":
