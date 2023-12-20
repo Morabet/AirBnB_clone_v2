@@ -30,7 +30,7 @@ class State(BaseModel, Base):
         def cities(self):
             from models import storage
 
-            dict_cities = storage.all("City").values()
+            dict_cities = storage.all(self).values()
             cities = []
 
             for obj in dict_cities:

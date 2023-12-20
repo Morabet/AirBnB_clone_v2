@@ -1,74 +1,91 @@
 #!/usr/bin/python3
-"""This module defines a base class for all models in our hbnb clone"""
+"""File to Implement the DB storage"""
+import os
 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
+from models.base_model import Base
+from models.amenity import Amenity
+from models.city import City
+from models.place import Place
+from models.state import State
+from models.review import Review
+from models.user import User
 
-import uuid
-from datetime import datetime
-
-Base = declarative_base()
+from sqlalchemy import (create_engine)
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
-class BaseModel:
-    """A base class for all hbnb models"""
+classes = {
+        "User": User, "State": State, "City": City,
+        "Amenity": Amenity, "Place": Place, "Review": Review
+        }
 
-    id = Column(String(60), nullable=False, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
 
-    def __init__(self, *args, **kwargs):
-        """Instatntiates a new model"""
+class DBStorage():
+    """Implementing the class"""
 
-        self.id = str(uuid.uuid4())
+    __engine = None
+    __session = None
 
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+    def __init__(self):
+        """Initializing the instance"""
 
-        if kwargs:
-            for k, v in kwargs.items():
+        user = os.getenv('HBNB_MYSQL_USER')
+        pw = os.getenv('HBNB_MYSQL_PWD')
+        host = os.getenv('HBNB_MYSQL_HOST')
+        db = os.getenv('HBNB_MYSQL_DB')
 
-                if k == "__class__":
-                    continue
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}:3306/{}'
+                                      .format(user, pw, host, db),
+                                      pool_pre_ping=True)
 
-                else:
-                    if k == "created_at" or k == "updated_at":
-                        setattr(self, k, datetime.fromisoformat(v))
+        if os.getenv('HBNB_ENV') == 'test':
+            # drop all tables if testing
 
-                    else:
-                        setattr(self, k, v)
+            Base.metadata.drop_all(engine)
 
-    def __str__(self):
-        """Returns a string representation of the instance"""
-        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
+    def all(self, cls=None):
+        """query all objects depending of the class name"""
 
-        # removing '_sa_instance_state' from '__dict__'
-        d = self.__dict__.copy()
-        d.pop('_sa_instance_state', None)
+        if not self.__session:
+            self.reload()
 
-        return '[{}] ({}) {}'.format(cls, self.id, d)
+        objects = {}
+
+        if type(cls) is str:
+            cls = classes[cls]
+
+        if cls in classes.values():
+
+            for obj in self.__session.query(cls).all():
+                objects[obj.__class__.__name__ + '.' + obj.id] = obj
+
+        else:
+            for c in classes.values():
+                for obj in self.__session.query(c):
+                    objects[obj.__class__.__name__ + '.' + obj.id] = obj
+
+        return objects
+
+    def new(self, obj):
+        """add the object to the current database session"""
+        self.__session.add(obj)
 
     def save(self):
-        """Updates updated_at with current time when instance is changed"""
-        from models import storage
-        self.updated_at = datetime.now()
-        storage.new(self)
-        storage.save()
+        """commit all changes of the current database session"""
+        self.__session.commit()
 
-    def to_dict(self):
-        """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                          (str(type(self)).split('.')[-1]).split('\'')[0]})
-        dictionary['created_at'] = self.created_at.isoformat()
-        dictionary['updated_at'] = self.updated_at.isoformat()
+    def delete(self, obj=None):
+        """ delete from the current database session obj if not None"""
 
-        if '_sa_instance_state' in dictionary.keys():
-            dictionary.pop('_sa_instance_state', None)
+        if obj:
+            self.__session.delete(obj)
 
-        return dictionary
+    def reload(self):
+        """create all table in DB and start a Session"""
 
-    def delete(self):
-        """delete the current instance from the storage"""
-        models.storage.delete(self)
+        Base.metadata.create_all(bind=self.__engine)
+
+        session_factory = sessionmaker(bind=self.__engine,
+                                       expire_on_commit=False)
+        Session = scoped_session(session_factory)
+        self.__session = Session()
