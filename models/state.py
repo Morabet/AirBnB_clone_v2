@@ -3,7 +3,6 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-from models.city import City
 
 import os
 
@@ -31,7 +30,7 @@ class State(BaseModel, Base):
         def cities(self):
             from models import storage
 
-            dict_cities = list(storage.all(City).values())
+            dict_cities = storage.all("City").values()
             cities = []
 
             for obj in dict_cities:
