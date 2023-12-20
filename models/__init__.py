@@ -1,17 +1,17 @@
 #!/usr/bin/python3
-"""Instantiates a storage object.
-
--> If the environmental variable 'HBNB_TYPE_STORAGE' is set to 'db',
-   instantiates a database storage engine (DBStorage).
--> Otherwise, instantiates a file storage engine (FileStorage).
-"""
-from os import getenv
+"""This module instantiates an object of class FileStorage"""
+from models.engine.file_storage import FileStorage
+from models.engine.db_storage import DBStorage
+import os
 
 
-if getenv("HBNB_TYPE_STORAGE") == "db":
-    from models.engine.db_storage import DBStorage
+if os.getenv('HBNB_TYPE_STORAGE') == "db":
     storage = DBStorage()
 else:
-    from models.engine.file_storage import FileStorage
     storage = FileStorage()
+
+"""
+This “switch” will allow you to change storage
+type directly by using an environment variable
+"""
 storage.reload()
