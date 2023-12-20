@@ -114,23 +114,20 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    # ==========================================
     def do_create(self, args):
         """ Create an object of any class"""
-        if not args:
+        cmd = self.parse_creation_line(args)
+
+        if not cmd["_cls"]:
             print("** class name missing **")
             return
-
-        # returns a 'dict' = {_cls = "*", params = {*}}
-        cmd = self.parse_creation_line(args)
-        if not cmd:
+        elif cmd["_cls"] not in HBNBCommand.classes:
+            print("** class doesn't exist **")
             return
 
         new_instance = HBNBCommand.classes[cmd["_cls"]]()
         if len(cmd["_valide_params"]) > 0:
-
-            for k, v in cmd["_valide_params"].items():
-                setattr(new_instance, k, v)
+            new_instance.__dict__.update(cmd["_valide_params"])
 
         print(new_instance.id)
         new_instance.save()
@@ -164,7 +161,7 @@ class HBNBCommand(cmd.Cmd):
 
         key = c_name + "." + c_id
         try:
-            print(storage.all([key]))
+            print(storage._FileStorage__objects[key])
         except KeyError:
             print("** no instance found **")
 
@@ -216,7 +213,6 @@ class HBNBCommand(cmd.Cmd):
                 print("** class doesn't exist **")
                 return
             for k, v in storage.all(args).items():
-
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
@@ -233,7 +229,7 @@ class HBNBCommand(cmd.Cmd):
     def do_count(self, args):
         """Count current number of class instances"""
         count = 0
-        for k, v in storage.all().items():
+        for k, v in storage._FileStorage__objects.items():
             if args == k.split('.')[0]:
                 count += 1
         print(count)
@@ -339,26 +335,18 @@ class HBNBCommand(cmd.Cmd):
         - the Syntax: create <Class name> <param 1> <param 2> <param 3>...
         - Param syntax: <key name>=<value>
         - String: "<value>" => starts with a double quote
-            - all underscores _ must be replace by spaces
-            - Float: <unit>.<decimal> => contains a dot .
-            - Integer: <number> => default case
+        - all underscores _ must be replace by spaces
+        - Float: <unit>.<decimal> => contains a dot .
+        - Integer: <number> => default case
         """
         _cls = ""
         _valide_params = {}
         cmd = {"_cls": "", "_valide_params": {}}
 
         list_line = line.split()
-
-        if not list_line:
-            return
-
         _cls = list_line[0]
 
-        if _cls not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-
-        # will strore the params
+        # will store the params
         _params = {}
         if len(list_line) > 1:
 
@@ -388,23 +376,17 @@ class HBNBCommand(cmd.Cmd):
                         v = v[1:-1].replace('"', '\"')
                         _valide_params[k] = v
 
-                        """
-                        match = re.search(r'(?P<t_str>"([^"]|\")*")', v)
-
-                        if match:
-                            # v = match.group("t_str")
-                            v = "XXXXXXXXX"
-
-                            _valide_params[k] = v.replace("_", " ")
-                        """
-
                     else:
+                        # if none of the above remove it from '_params'
                         continue
+
                 except Exception as e:
+                    print(f"!!!!! == ERROR\n{e}")
                     continue
 
         cmd["_cls"] = _cls
         cmd["_valide_params"] = _valide_params
+
         return cmd
 
 
