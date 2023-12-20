@@ -1,32 +1,46 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
+from models.base_model import BaseModel
 
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
     __file_path = 'file.json'
     __objects = {}
+    classes = {
+               'BaseModel': BaseModel, 'User': User, 'Place': Place,
+               'State': State, 'City': City, 'Amenity': Amenity,
+               'Review': Review
+              }
 
-    classes = [
-            "BaseModel", "User", "State",
-            "City", "Amenity", "Place", "Review"]
+    def delete(self, obj=None):
+        """delete obj from __objects if it exists"""
+
+        if obj:
+            objs = FileStorage.__objects.copy()
+
+            for k in objs.keys():
+                obj_id = f"{obj.__class__.__name__}.{obj.id}"
+                if obj_id == k:
+                    FileStorage.__objects.pop(k)
+
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-
         all_list = {}
 
-        if cls:
-            if cls.__class__.__name__ in FileStorage.classes:
-
-                for k, v in FileStorage.__objects.items():
-                    # get the class from the 'key.id'
-                    key_class = k.split(".")[0]
-
-                    if key_class == cls.__name__:
-                        all_list[k] = v
-
+        if cls in FileStorage.classes.values():
+            for k, v in FileStorage.__objects.items():
+                obj = k.split(".")[0]
+                if obj == cls.__name__:
+                    all_list[k] = v
         else:
             all_list = FileStorage.__objects
 
@@ -65,22 +79,6 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
-
+                        self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
-
-    def delete(self, obj=None):
-        """delete obj from __objects if it exists"""
-
-        if obj:
-            # passing '__objects' in case we change it
-            objs = FileStorage.__objects.copy()
-
-            for k in objs.keys():
-
-                obj_id = f"{obj.__class__.__name__}.{obj.id}"
-
-                if obj_id == k:
-
-                    FileStorage.__objects.pop(k)
