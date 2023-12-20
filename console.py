@@ -116,18 +116,21 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        cmd = self.parse_creation_line(args)
 
-        if not cmd["_cls"]:
+        if not args:
             print("** class name missing **")
             return
-        elif cmd["_cls"] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
+
+        # returns a 'dict' = {_cls = "*", params = {*}}
+        cmd = self.parse_creation_line(args)
+        if not cmd:
             return
 
         new_instance = HBNBCommand.classes[cmd["_cls"]]()
         if len(cmd["_valide_params"]) > 0:
-            new_instance.__dict__.update(cmd["_valide_params"])
+
+            for k, v in cmd["_valide_params"].items():
+                setattr(new_instance, k, v)
 
         print(new_instance.id)
         new_instance.save()
@@ -212,11 +215,11 @@ class HBNBCommand(cmd.Cmd):
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage.all(args).items():
+            for k, v in storage._FileStorage__objects.items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage.all().items():
+            for k, v in storage._FileStorage__objects.items():
                 print_list.append(str(v))
 
         print(print_list)
