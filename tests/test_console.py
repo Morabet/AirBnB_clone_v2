@@ -21,7 +21,6 @@ class TestHBNBCommand(unittest.TestCase):
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') == 'db', 'FileStorage test')
-
     def test_fs_create(self):
         """Tests 'create' with the FileStorage"""
 
@@ -45,7 +44,6 @@ class TestHBNBCommand(unittest.TestCase):
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-
     def test_db_create(self):
         """Tests 'create' with the DBStorage."""
 
@@ -76,7 +74,6 @@ class TestHBNBCommand(unittest.TestCase):
 
     @unittest.skipIf(
         os.getenv('HBNB_TYPE_STORAGE') != 'db', 'DBStorage test')
-
     def test_db_show(self):
         """Tests 'show' with the DBstorage."""
 
