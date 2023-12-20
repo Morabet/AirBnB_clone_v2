@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 """This module defines a base class for all models in our hbnb clone"""
-
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
-
 import uuid
 from datetime import datetime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime
 
 Base = declarative_base()
 
@@ -13,7 +11,7 @@ Base = declarative_base()
 class BaseModel:
     """A base class for all hbnb models"""
 
-    id = Column(String(60), nullable=False, primary_key=True)
+    id = Column(String(60), primary_key=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
 
@@ -41,11 +39,8 @@ class BaseModel:
     def __str__(self):
         """Returns a string representation of the instance"""
         cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-
-        # removing '_sa_instance_state' from '__dict__'
         d = self.__dict__.copy()
-        d.pop('_sa_instance_state', None)
-
+        d.pop("_sa_instance_state", None)
         return '[{}] ({}) {}'.format(cls, self.id, d)
 
     def save(self):
@@ -65,10 +60,12 @@ class BaseModel:
         dictionary['updated_at'] = self.updated_at.isoformat()
 
         if '_sa_instance_state' in dictionary.keys():
-            dictionary.pop('_sa_instance_state', None)
+            del dictionary['_sa_instance_state']
 
         return dictionary
 
     def delete(self):
         """delete the current instance from the storage"""
-        models.storage.delete(self)
+
+        from models import storage
+        storage.delete(self)
