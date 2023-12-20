@@ -41,7 +41,7 @@ class DBStorage():
         if os.getenv('HBNB_ENV') == 'test':
             # drop all tables if testing
 
-            Base.metadata.drop_all(engine)
+            Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
         """query all objects depending of the class name"""
