@@ -29,7 +29,7 @@ def do_deploy(archive_path):
             run(f"mkdir -p {uncompress_fold}")
             run(f"tar -xvzf {tmp_location} -C {uncompress_fold}")
             run(f"rm {tmp_location}")
-            run(f"mv {uncompress_fold}/web_static/* {uncompress_fold}")
+            run(f"mv -n {uncompress_fold}/web_static/* {uncompress_fold}")
             run(f"rm -rf {uncompress_fold}/web_static")
             run(f"rm -rf /data/web_static/current")
             run(f"ln -s {uncompress_fold} /data/web_static/current")
