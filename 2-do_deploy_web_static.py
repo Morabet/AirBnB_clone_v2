@@ -16,7 +16,7 @@ def do_deploy(archive_path):
         if os.path.exists(archive_path):
             archive_arr = archive_path.split('/')
             archive_full_name = archive_arr[1]
-            archive_arr = archive_full_name.split('.')
+            archive_arr = archive_arr[1].split('.')
             archive_name = archive_arr[0]
 
             """Upload archive to the server"""
