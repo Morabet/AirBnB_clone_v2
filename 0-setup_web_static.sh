@@ -18,10 +18,6 @@ ln -s /data/web_static/releases/test/ /data/web_static/current
 # Change ownership to user ubuntu
 chown -R ubuntu:ubuntu /data/
 # Configure nginx to serve content pointed to by symbolic link to hbnb_static
-sed -i '/server {/a \
-    location \/hbnb_static\/ {\
-        alias \/data\/web_static\/current\/;\
-        index index.html;\
-    }' /etc/nginx/sites-available/default
+sed -i '16i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
 
 service nginx restart
