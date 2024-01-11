@@ -1,62 +1,74 @@
 # sets up your web servers for the deployment of web_static
 
+$config = "server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    add_header X-Served-By ${hostname};
+
+    root   /var/www/html;
+    index  index.html index.htm;
+    location / {
+        try_files ${uri} ${uri}/ =404;
+    }
+
+    location /hbnb_static {
+        alias /data/web_static/current;
+        index index.html index.htm;
+    }
+}"
+
 exec {'update':
   provider => shell,
   command  => 'sudo apt-get -y update',
-  before   => Exec['install Nginx'],
 }
 
-exec {'install Nginx':
-  provider => shell,
-  command  => 'sudo apt-get -y install nginx',
-  before   => Exec['add_dir_test'],
+-> package { 'nginx':
+ensure   => 'installed',
+provider => 'apt'
 }
 
-
-exec {'add_dir_test':
-  provider => shell,
-  command  => 'mkdir -p /data/web_static/releases/test/',
-  before   => Exec['add_dir_shared'],
+-> file { '/data':
+  ensure  => 'directory'
 }
 
-exec {'add_dir_shared':
-  provider => shell,
-  command  => 'mkdir -p /data/web_static/shared/',
-  before   => Exec['add_file_html'],
+-> file { '/data/web_static':
+  ensure => 'directory'
 }
 
-
-exec {'add_file_html':
-  provider => shell,
-  command  => 'echo "Holberton School" >/data/web_static/releases/test/index.html',
-  before   => Exec['remove_symbol'],
+-> file { '/data/web_static/releases':
+  ensure => 'directory'
 }
 
-file {'remove_symbol'
-  path     => '/data/web_static/current',
-  ensure   => absent,
-  before   => Exec['create_symbol']
+-> file { '/data/web_static/releases/test':
+  ensure => 'directory'
 }
 
-exec {'create_symbol':
-  provider => shell,
-  command  => 'ln -sf /data/web_static/releases/test/ /data/web_static/current',
-  before   => Exec['change_owner'],
+-> file { '/data/web_static/shared':
+  ensure => 'directory'
 }
 
-exec {'change_owner':
-  provider => shell,
-  command  => 'chown -R ubuntu:ubuntu /data',
-  before   => Exec['conf_nginx'],
+-> file { '/data/web_static/releases/test/index.html':
+  ensure  => 'present',
+  content => 'Holberton School'
 }
 
-exec { 'conf_nginx':
-  provider => shell,
-  command  => 'sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default',
-  before   => Exec['restart Nginx'],
+-> file { '/data/web_static/current':
+  ensure => 'link',
+  target => '/data/web_static/releases/test'
 }
 
-exec { 'restart Nginx':
-  provider => shell,
-  command  => 'sudo service nginx restart',
+-> exec {'owner':
+command => 'chown -R ubuntu:ubuntu /data',
+path    => '/usr/bin/:/usr/local/bin/:/bin/'
+}
+
+-> file { '/etc/nginx/sites-available/default':
+  ensure  => 'present',
+  content => $config
+}
+
+-> exec { 'restart nginx':
+provider => shell,
+command  => 'sudo service nginx restart',
 }
