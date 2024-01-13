@@ -11,29 +11,22 @@ env.key_filename = '~/.ssh/id_rsa'
 
 def do_deploy(archive_path):
     """Archive distributor"""
-
     try:
         if os.path.exists(archive_path):
-            archive_arr = archive_path.split('/')
-            archive_full_name = archive_arr[1]
-            archive_arr = archive_arr[1].split('.')
-            archive_name = archive_arr[0]
+            full_name = archive_path.split('/')[1]
+            location = file_name.split('.')[0]
+            path_location = f"/data/web_static/releases/{location}"
 
             """Upload archive to the server"""
-            put(archive_path, '/tmp')
-
-            uncompress_fold = f"/data/web_static/releases/{archive_name}"
-            tmp_location = f"/tmp/{archive_full_name}"
-
+            put(archive_path, '/tmp/')
             """Run remote commands on the server"""
-            run(f"mkdir -p {uncompress_fold}")
-            run(f"tar -xvzf {tmp_location} -C {uncompress_fold}")
-            run(f"rm {tmp_location}")
-            run(f"mv {uncompress_fold}/web_static/* {uncompress_fold}")
-            run(f"rm -rf {uncompress_fold}/web_static")
+            run(f"mkdir -p {path_location}")
+            run(f"tar -xzf /tmp/{full_name} -C {path_location}")
+            run(f"rm /tmp/{full_name}")
+            run(f"mv {path_location}/web_static/* {path_location}")
+            run(f"rm -rf {path_location}/web_static")
             run(f"rm -rf /data/web_static/current")
-            run(f"ln -s {uncompress_fold} /data/web_static/current")
-            run("sudo service nginx restart")
+            run(f"ln -s {path_location} /data/web_static/current")
             return True
         else:
             return False
