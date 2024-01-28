@@ -49,7 +49,6 @@ class DBStorage():
             if type(cls) is str:
                 cls = eval(cls)
             query = self.__session.query(cls)
-            print("start")
             for obj in query:
                 dic[obj.__class__.__name__ + "." + obj.id] = obj
         else:
