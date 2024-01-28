@@ -6,6 +6,7 @@ import os
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
+from models.city import City
 
 
 class State(BaseModel, Base):
@@ -30,8 +31,7 @@ class State(BaseModel, Base):
             """Getter for the City """
             from models import storage
             city_list = []
-            city_dict = stroge.all(self).values()
-            for obj in city_dict:
+            for obj in stroge.all(City).values():
                 if obj.state_id == self.id:
                     city_list.append(obj)
 
