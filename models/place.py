@@ -80,5 +80,6 @@ class Place(BaseModel, Base):
 
         @amenities.setter
         def amenities(self, value):
+            """ setter for the amenity """
             if type(value).__name__ == "Amenity":
                 self.amenity_ids.append(value.id)

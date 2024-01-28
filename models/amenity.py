@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 """ State Module for HBNB project """
 
 import os
@@ -9,7 +8,7 @@ from sqlalchemy.orm import relationship
 
 
 class Amenity(BaseModel, Base):
-    """ """
+    """ Represents an Amenity for a MySQL database"""
     __tablename__ = 'amenities'
 
     if os.getenv('HBNB_TYPE_STORAGE') == 'db':
