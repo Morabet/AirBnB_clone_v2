@@ -32,7 +32,7 @@ class State(BaseModel, Base):
             """Getter for the City """
             from models import storage
             city_list = []
-            for obj in stroge.all(City).values():
+            for obj in storage.all(City).values():
                 if obj.state_id == self.id:
                     city_list.append(obj)
 
