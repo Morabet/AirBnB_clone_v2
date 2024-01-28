@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" State Module for HBNB project """
+""" Amenity Module for HBNB project """
 
 import os
 from models.base_model import BaseModel, Base
@@ -19,3 +19,7 @@ class Amenity(BaseModel, Base):
 
     else:
         name = ""
+
+    def __init__(self, *args, **kwargs):
+        """ Instatntiates"""
+        super().__init__(*args, **kwargs)
